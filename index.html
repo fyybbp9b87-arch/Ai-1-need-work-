@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMN AI | NEURAL LINK</title>
+    
+    <script src="https://js.puter.com/v2/"></script>
+
+    <style>
+        /* THEME: UMN GREEN & RED (High Contrast Hacker Aesthetic) */
+        :root {
+            --green: #00ff41;
+            --red: #ff3e3e;
+            --bg: #050505;
+            --header: #111;
+            --glow: rgba(0, 255, 65, 0.2);
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--green);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Scanline effect for that AI feel */
+        body::before {
+            content: " ";
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 10;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        header {
+            background: var(--header);
+            padding: 20px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: 900;
+            border-bottom: 4px solid var(--red);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            box-shadow: 0 0 20px rgba(255, 62, 62, 0.4);
+            z-index: 11;
+        }
+
+        #chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 1;
+        }
+
+        .msg {
+            padding: 18px;
+            border: 2px solid;
+            max-width: 80%;
+            line-height: 1.6;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* User Message: Red Theme */
+        .user {
+            border-color: var(--red);
+            background: rgba(255, 62, 62, 0.1);
+            color: #ffffff;
+            align-self: flex-end;
+            border-radius: 12px 12px 0 12px;
+            text-shadow: 0 0 5px rgba(255, 62, 62, 0.5);
+        }
+
+        /* AI Message: Green Theme */
+        .ai {
+            border-color: var(--green);
+            background: rgba(0, 255, 65, 0.08);
+            align-self: flex-start;
+            border-radius: 12px 12px 12px 0;
+            box-shadow: 0 0 15px var(--glow);
+        }
+
+        .meta {
+            font-size: 11px;
+            color: var(--red);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #bottom {
+            display: flex;
+            padding: 25px;
+            background: var(--header);
+            gap: 15px;
+            border-top: 2px solid #333;
+            z-index: 11;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--green);
+            background: #000;
+            color: var(--green);
+            font-family: 'Courier New', monospace;
+            outline: none;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--red);
+            box-shadow: 0 0 15px rgba(255, 62, 62, 0.3);
+        }
+
+        button {
+            padding: 0 35px;
+            border: none;
+            background: var(--red);
+            color: white;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #e60000;
+            box-shadow: 0 0 20px var(--red);
+            transform: scale(1.05);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--red); }
+    </style>
+</head>
+<body>
+
+<header>UMN AI // <span style="color:var(--red)">TERMINAL</span></header>
+
+<div id="chat">
+    <div class="msg ai">
+        <span class="meta">[CORE_LINK_ESTABLISHED]</span>
+        Intelligence: PUTER.JS CLOUD LLM<br>
+        Search Nodes: WIKIPEDIA + DUCKDUCKGO<br><br>
+        Ready for input, operative. 
+    </div>
+</div>
+
+<div id="bottom">
+    <input id="prompt" placeholder="ENTER COMMAND..." autocomplete="off" onkeydown="if(event.key==='Enter') send()">
+    <button onclick="send()">EXECUTE</button>
+</div>
+
+<script>
+async function send() {
+    const input = document.getElementById("prompt");
+    const query = input.value.trim();
+    if (!query) return;
+
+    // 1. Add User message
+    addMsg(query, "user");
+    input.value = "";
+
+    // 2. Add AI placeholder with "Processing" feel
+    const aiBox = addMsg("SCANNING GLOBAL DATA...", "ai");
+
+    try {
+        let contextData = "";
+
+        // --- FETCH SOURCE A: Wikipedia ---
+        try {
+            const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+            if (wikiRes.ok) {
+                const wiki = await wikiRes.json();
+                contextData += ` Wikipedia: ${wiki.extract}`;
+            }
+        } catch(e) {}
+
+        // --- FETCH SOURCE B: DuckDuckGo ---
+        try {
+            const ddgRes = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1`);
+            const ddg = await ddgRes.json();
+            if (ddg.AbstractText) {
+                contextData += ` DuckDuckGo: ${ddg.AbstractText}`;
+            }
+        } catch(e) {}
+
+        // --- THE AI BRAIN: Puter.js ---
+        // This processes the facts and provides a corrected, AI-styled response
+        const response = await puter.ai.chat(
+            `You are UMN AI, a high-level security terminal AI. 
+            Analyze this context: "${contextData}". 
+            Question: "${query}". 
+            Give a smart, professional response. If you found info, summarize it. If not, use your own knowledge. 
+            Keep the tone like a direct AI assistant. Limit to 3 sentences.`
+        );
+
+        aiBox.innerHTML = `<span class="meta">[ANALYSIS_COMPLETE]</span>${response}`;
+
+    } catch (err) {
+        aiBox.innerHTML = `<span class="meta">[CRITICAL_ERROR]</span> Uplink failed. Re-establish connection.`;
+    }
+}
+
+function addMsg(text, type) {
+    const div = document.createElement("div");
+    div.className = `msg ${type}`;
+    div.innerText = text;
+    const chat = document.getElementById("chat");
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+}
+</script>
+</body>
+</html>
